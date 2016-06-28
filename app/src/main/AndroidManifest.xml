@@ -20,9 +20,11 @@
 
         <service
             android:name=".MyService"
+            
             android:enabled="true"
             android:exported="true"
             android:process=":ip_ping" />
+
     </application>
 
 </manifest>

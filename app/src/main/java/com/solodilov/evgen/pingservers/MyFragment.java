@@ -1,18 +1,23 @@
 package com.solodilov.evgen.pingservers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 
 public class MyFragment extends Fragment {
@@ -25,8 +30,11 @@ public class MyFragment extends Fragment {
     TextView mPingLog;
     @BindView(R.id.start_or_stop_service)
     Button mBtn;
+    @BindView(R.id.chb_service)
+    CheckBox mChBox;
 
     OnStartMyService mOnStartMyService;
+    SharedPreferences mPreferences;
 
     public MyFragment() {
     }
@@ -41,9 +49,7 @@ public class MyFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_my, container, false);
         ButterKnife.bind(this, rootView);
         if (mOnStartMyService != null) {
-            if (mOnStartMyService.onIsService()) {
-                mBtn.setText("Stop");
-            }
+            mOnStartMyService.onStopService();
         }
         return rootView;
     }
@@ -51,7 +57,34 @@ public class MyFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        String ip = getActivity().getPreferences(Context.MODE_PRIVATE)
+                .getString(MainActivity.CHACKABLE_SERVICE, "");
+        mEnterIP.setText(ip);
+        mChBox.setChecked(!ip.equals(""));
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mOnStartMyService.onStopService();
+        if (mChBox.isChecked()) {
+            mOnStartMyService.onStartService(mEnterIP.getText().toString(), true);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        String strIp = mEnterIP.getText().toString();
+        if (mChBox.isChecked()) {
+            if (!TextUtils.isEmpty(strIp)) {
+                Editor editor = mPreferences.edit();
+                editor.putString(MainActivity.CHACKABLE_SERVICE, strIp);
+                editor.apply();
+            }
+            mOnStartMyService.onStartService(strIp, false);
+        }
+        super.onStop();
     }
 
     @Override
@@ -72,22 +105,38 @@ public class MyFragment extends Fragment {
         String textButton = (String) button.getText();
         switch (textButton) {
             case "Start":
-                button.setText("Stop");
-                mOnStartMyService.onStartService(String.valueOf(mEnterIP.getText()));
+                mOnStartMyService.onStartService(String.valueOf(mEnterIP.getText()), true);
+                setTextButton("Stop");
                 break;
             case "Stop":
-                button.setText("Start");
                 mOnStartMyService.onStopService();
+                setTextButton("Start");
                 break;
             default:
         }
     }
 
+    void setTextButton(String text) {
+        mBtn.setText(text);
+    }
+
+    @OnCheckedChanged(R.id.chb_service)
+    void onChecked(boolean checked) {
+        if (!checked) {
+            mPreferences.edit().clear().apply();
+        } else {
+            if (TextUtils.isEmpty(mEnterIP.getText().toString())) {
+                mEnterIP.setError("Enter your ip or dns");
+                mChBox.setChecked(!checked);
+            }
+        }
+
+    }
+
     interface OnStartMyService {
-        void onStartService(String command);
+        void onStartService(String command, boolean taskServiceFragment);
 
         void onStopService();
 
-        boolean onIsService();
     }
 }
