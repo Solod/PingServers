@@ -21,7 +21,6 @@ import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 
 public class MyFragment extends Fragment {
-    private static final String LOG_ = MyFragment.class.getCanonicalName();
     @BindView(R.id.et_enter_ip)
     EditText mEnterIP;
     @BindView(R.id.status_service)
@@ -33,8 +32,8 @@ public class MyFragment extends Fragment {
     @BindView(R.id.chb_service)
     CheckBox mChBox;
 
-    OnStartMyService mOnStartMyService;
-    SharedPreferences mPreferences;
+    private OnStartMyService mOnStartMyService;
+    private SharedPreferences mPreferences;
 
     public MyFragment() {
     }
@@ -127,7 +126,7 @@ public class MyFragment extends Fragment {
         } else {
             if (TextUtils.isEmpty(mEnterIP.getText().toString())) {
                 mEnterIP.setError("Enter your ip or dns");
-                mChBox.setChecked(!checked);
+                mChBox.setChecked(false);
             }
         }
 
@@ -137,6 +136,5 @@ public class MyFragment extends Fragment {
         void onStartService(String command, boolean taskServiceFragment);
 
         void onStopService();
-
     }
 }

@@ -18,19 +18,18 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
     public static final String SERVICE_MSG = "msg service";
     public static final String STATUS_SERVICE = "status";
     public final static int STATUS_NORM = 100;
-    public final static int STATUS_ALARM = 200;
+    private final static int STATUS_ALARM = 200;
     public static final String BROADCAST_ACTION = "com.solodilov.evgen.pingservers";
-    public static final String SERVICE_ACTION = "com.solodilov.evgen.pingservers";
+    private static final String SERVICE_ACTION = "com.solodilov.evgen.pingservers";
     public static final int START_KEY = 1;
     public static final int STOP_KEY = 2;
     public static final String CHACKABLE_SERVICE = "check";
     private static final int TASK_CODE = 1;
     public static final String PENDING_INTENT = "pi";
 
-    BroadcastReceiver receiver;
-    AlarmManager mAlarmManager;
-    PendingIntent mPi;
-    Intent intent;
+    private BroadcastReceiver receiver;
+    private AlarmManager mAlarmManager;
+    private Intent intentFromService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,33 +40,32 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
                 .add(R.id.activity_container, MyFragment.newInstance())
                 .commit();
         setBroadcastReceiver();
+        initIntentBackground();
     }
 
     @Override
     public void onStartService(String command, boolean taskServiceFragment) {
         String mCommand = "/system/bin/ping -c 4 " + command;
-        intent = new Intent(this, MyService.class);
-        intent.setAction(SERVICE_ACTION);
-        intent.putExtra(STRING_COMMAND, mCommand);
+        intentFromService.putExtra(STRING_COMMAND, mCommand);
 
         if (taskServiceFragment) {
             PendingIntent pi = createPendingResult(TASK_CODE, new Intent(), 0);
-            intent.putExtra(PENDING_INTENT, pi);
-            startService(intent);
+            intentFromService.putExtra(PENDING_INTENT, pi);
+            startService(intentFromService);
         } else {
-            mPi = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             mAlarmManager.setRepeating(
                     AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + 3000,
-                    6000,
-                    mPi);
+                    5000,
+                    backgroundPendingIntent());
         }
     }
+
 
     @Override
     public void onStopService() {
         if (mAlarmManager != null) {
-            mAlarmManager.cancel(mPi);
+            mAlarmManager.cancel(backgroundPendingIntent());
         }
     }
 
@@ -109,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
                             break;
                         case -1:
                             myFragment.mPingLog.setTextColor(Color.YELLOW);
-                            myFragment.mPingLog.setText("ERROR");
+                            myFragment.mPingLog.setText(getString(R.string.error));
                     }
                 }
             }
@@ -126,5 +124,13 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
         super.onDestroy();
     }
 
+    private void initIntentBackground() {
+        intentFromService = new Intent(this, MyService.class);
+        intentFromService.setAction(SERVICE_ACTION);
+    }
+
+    private PendingIntent backgroundPendingIntent() {
+        return PendingIntent.getService(this, 0, intentFromService, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
 
 }

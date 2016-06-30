@@ -14,10 +14,9 @@ import java.io.InputStreamReader;
 
 public class MyService extends Service {
     final private String LOG_ = MyService.class.getCanonicalName();
-    private MyRun mMyRun;
     private String mCommand;
-    private Intent mIntentBR = new Intent(MainActivity.BROADCAST_ACTION);
-    NotificationManager nm;
+    private final Intent mIntentBR = new Intent(MainActivity.BROADCAST_ACTION);
+    private NotificationManager nm;
 
     public MyService() {
     }
@@ -37,8 +36,7 @@ public class MyService extends Service {
             mCommand = intent.getStringExtra(MainActivity.STRING_COMMAND);
             pendingIntent = intent.getParcelableExtra(MainActivity.PENDING_INTENT);
         }
-
-        mMyRun = new MyRun(mCommand, pendingIntent);
+        MyRun mMyRun = new MyRun(mCommand, pendingIntent);
         mMyRun.start();
 
         return START_REDELIVER_INTENT;
@@ -57,10 +55,10 @@ public class MyService extends Service {
     }
 
     class MyRun extends Thread {
-        String command;
-        java.lang.Process p;
+        private final String command;
+        private java.lang.Process p;
         boolean flag = true;
-        PendingIntent pi;
+        private final PendingIntent pi;
 
         public MyRun(String command, PendingIntent pi) {
             this.command = command;
@@ -81,7 +79,6 @@ public class MyService extends Service {
                 p = Runtime.getRuntime().exec(command);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 BufferedReader bufferedReaderErr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-
                 while (flag) {
                     readStreamWork(bufferedReader);
                     readStreamErr(bufferedReaderErr);
@@ -104,19 +101,31 @@ public class MyService extends Service {
 
         private void readStreamWork(BufferedReader bufferedReader) {
             try {
-                String inputLine = "";
+                String inputLine;
                 while (bufferedReader.ready() && (inputLine = bufferedReader.readLine()) != null) {
-                    inputLine = inputLine.toLowerCase();
-                    Log.d(LOG_, "ready! " + inputLine);
-                    if (inputLine.contains("---") || inputLine.contains("ping")) {  // when we get to the last line of executed ping command
-                        stringNameServer(inputLine);
-                    }
-                    if (inputLine.contains("bytes from")) {
-                        stringPing(inputLine);
-                    }
-                    if (inputLine.contains("avg")) {  // when we get to the last line of executed ping command
-                        flag = false;
-                        stringReply(inputLine);
+                    if (inputLine.length() > 0) {
+                        inputLine = inputLine.toLowerCase();
+                        Log.d(LOG_, "ready! " + inputLine);
+                        if (inputLine.contains("---") || inputLine.contains("ping")) {  // when we get to the last line of executed ping command
+                            stringNameServer(inputLine);
+                        }
+                        if (inputLine.contains("bytes from")) {
+                            stringPing(inputLine);
+                        }
+                        if (inputLine.contains("avg")) {  // when we get to the last line of executed ping command
+                            flag = false;
+                            stringReply(inputLine);
+                        }
+                        if (inputLine.contains("packets transmitted")) {
+                            int lossPacket = analysisLossPacket(inputLine); //Узнать кол-во потеряных пакетов
+                            if (lossPacket > 30) {
+                                activateAlarm();
+                            }
+                            stringPing(inputLine);
+                        }
+                        if (inputLine.contains("pipe")) {  // when we get to the last line of executed ping command
+                            flag = false;
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -124,9 +133,10 @@ public class MyService extends Service {
             }
         }
 
+
         private void readStreamErr(BufferedReader bufferedReaderErr) {
             try {
-                String inputLine = "";
+                String inputLine;
                 while (bufferedReaderErr.ready() && (inputLine = bufferedReaderErr.readLine()) != null) {
                     Log.d(LOG_, "Ready ERR " + inputLine);
                     if (inputLine.length() > 0) {
@@ -138,6 +148,10 @@ public class MyService extends Service {
                         if (inputLine.contains("unreachable")) {
                             Log.d(LOG_, "unreachable!!!");
                             activateAlarm();
+                            flag = false;
+                        }
+                        if (inputLine.contains("destination")) {
+                            Log.d(LOG_, "help!!!");
                             flag = false;
                         }
                         sendBroadcastReciver(inputLine);
@@ -166,6 +180,13 @@ public class MyService extends Service {
         String strAvgRtt = afterFirstSlash.substring(0, afterFirstSlash.indexOf('/'));
         sendBroadcastReciver(strAvgRtt);
         Log.d(LOG_, strAvgRtt);
+    }
+
+    private int analysisLossPacket(String inputLine) {
+        int anchor = inputLine.indexOf("%");
+        String afterEqual = inputLine.substring(inputLine.lastIndexOf(",", anchor) + 1, anchor).trim();
+        Log.d(LOG_, "LOSST " + afterEqual + "%");
+        return Integer.valueOf(afterEqual);
     }
 
     private void sendBroadcastReciver(String inputLine) {
