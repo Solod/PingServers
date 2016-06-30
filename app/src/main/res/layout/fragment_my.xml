@@ -31,6 +31,18 @@
         android:hint="@string/hint_address_from_server"
         android:inputType="textUri" />
 
+    <ImageView
+        android:id="@+id/btn_clean_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/et_enter_ip"
+        android:layout_alignEnd="@id/et_enter_ip"
+        android:layout_alignRight="@id/et_enter_ip"
+        android:clickable="true"
+        android:padding="4dp"
+
+        android:src="@android:drawable/ic_delete" />
+
     <CheckBox
         android:id="@+id/chb_service"
         android:layout_width="wrap_content"
