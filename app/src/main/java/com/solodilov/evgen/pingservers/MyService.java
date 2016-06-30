@@ -155,6 +155,7 @@ public class MyService extends Service {
                             flag = false;
                         }
                         sendBroadcastReciver(inputLine);
+                        activateAlarm();
                     }
                 }
             } catch (IOException e) {
