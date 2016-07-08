@@ -33,8 +33,6 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
     public static final String CHACKABLE_SERVICE = "check";
     private static final int TASK_CODE = 1;
     public static final String PENDING_INTENT = "pi";
-    private static final String SYSTEM_BIN_PING = "/system/bin/ping";
-    private static final String LOG_ = MainActivity.class.getCanonicalName();
 
     private BroadcastReceiver receiver;
     private AlarmManager mAlarmManager;
@@ -85,17 +83,16 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
             mAlarmManager.cancel(backgroundPendingIntent());
         }
         stopService(intentFromService);
-        //найти сервис и остановить
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == STOP_KEY) {
-            getFragment().setTextButton("Start");
+            getFragment().setTextButton(getString(R.string.text_button_start));
         }
         if (resultCode == START_KEY) {
-            getFragment().setTextButton("Stop");
+            getFragment().setTextButton(getString(R.string.text_button_stop));
         }
     }
 

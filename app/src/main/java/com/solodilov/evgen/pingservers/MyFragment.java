@@ -113,11 +113,11 @@ public class MyFragment extends Fragment {
         switch (textButton) {
             case "Start":
                 mOnStartMyService.onStartService(String.valueOf(mEnterIP.getText()), true);
-                setTextButton("Stop");
+                setTextButton(getString(R.string.text_button_stop));
                 break;
             case "Stop":
                 mOnStartMyService.onStopService();
-                setTextButton("Start");
+                setTextButton(getString(R.string.text_button_start));
                 break;
             default:
         }
@@ -133,7 +133,7 @@ public class MyFragment extends Fragment {
             mPreferences.edit().clear().apply();
         } else {
             if (TextUtils.isEmpty(mEnterIP.getText().toString())) {
-                mEnterIP.setError("Enter your ip or dns");
+                mEnterIP.setError(getString(R.string.error_text_empty_string));
                 mChBox.setChecked(false);
             }
         }

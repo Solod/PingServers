@@ -37,7 +37,7 @@ public class MyService extends Service {
         PendingIntent pendingIntent = null;
         if (intent != null) {
             mCommand = intent.getStringArrayListExtra(MainActivity.STRING_COMMAND);
-            Log.d(LOG_, Arrays.toString(mCommand                                                                                                                                                                                                                                                                                        .toArray()));
+            Log.d(LOG_, Arrays.toString(mCommand.toArray()));
             pendingIntent = intent.getParcelableExtra(MainActivity.PENDING_INTENT);
         }
         mMyRun = new MyRun(mCommand, pendingIntent);
@@ -76,7 +76,6 @@ public class MyService extends Service {
                 if (pi != null) {
                     try {
                         pi.send(MainActivity.START_KEY);
-                        Log.d("!!!!", "!!!!!!");
                     } catch (PendingIntent.CanceledException e) {
                         e.printStackTrace();
                     }
@@ -89,7 +88,6 @@ public class MyService extends Service {
                     readStreamErr(bufferedReaderErr);
                 }
             } catch (IOException e) {
-                Log.v(LOG_, "getLatency: EXCEPTION");
                 e.printStackTrace();
             } finally {
 
@@ -111,18 +109,20 @@ public class MyService extends Service {
                 while (bufferedReader.ready() && (inputLine = bufferedReader.readLine()) != null) {
                     if (inputLine.length() > 0) {
                         Log.d(LOG_, "ready! " + inputLine);
-                        if (inputLine.contains("---") || inputLine.contains("ping")) {  // when we get to the last line of executed ping command
+                        if (inputLine.contains("---") || inputLine.contains("ping")) {
+                            // when we get to the last line of executed ping command
                             stringNameServer(inputLine);
                         }
                         if (inputLine.contains("bytes from")) {
                             stringPing(inputLine);
                         }
-                        if (inputLine.contains("avg")) {  // when we get to the last line of executed ping command
+                        if (inputLine.contains("avg")) {
+                            // when we get to the last line of executed ping command
                             flag = false;
                             stringReply(inputLine);
                         }
                         if (inputLine.contains("packets transmitted")) {
-                            int lossPacket = analysisLossPacket(inputLine); //Узнать кол-во потеряных пакетов
+                            int lossPacket = analysisLossPacket(inputLine);
                             if (lossPacket > 30) {
                                 activateAlarm();
                             }
@@ -146,18 +146,15 @@ public class MyService extends Service {
                     Log.d(LOG_, "Ready ERR " + inputLine);
                     if (inputLine.length() > 0) {
                         if (inputLine.contains("unknown")) {
-                            Log.d(LOG_, "unknown!!!");
                             activateAlarm();
                             flag = false;
                         }
                         // No ping server
                         if (inputLine.contains("unreachable")) {
-                            Log.d(LOG_, "unreachable!!!");
                             activateAlarm();
                             flag = false;
                         }
                         if (inputLine.contains("destination")) {
-                            Log.d(LOG_, "help!!!");
                             flag = false;
                         }
                         sendBroadcastReciver(inputLine);
@@ -192,7 +189,6 @@ public class MyService extends Service {
     private int analysisLossPacket(String inputLine) {
         int anchor = inputLine.indexOf("%");
         String afterEqual = inputLine.substring(inputLine.lastIndexOf(",", anchor) + 1, anchor).trim();
-        Log.d(LOG_, "LOSST " + afterEqual + "%");
         return Integer.valueOf(afterEqual);
     }
 
@@ -209,13 +205,14 @@ public class MyService extends Service {
         Notification.Builder builder = new Notification.Builder(MyService.this);
         builder.setContentIntent(pIntent)
                 .setContentTitle("Alarm")
+                //TODO clarify any failure
                 .setContentText("произошел какойто сбой")
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .build();
-        Notification notif = builder.build();
+        Notification notice = builder.build();
 
-        notif.flags |= Notification.FLAG_AUTO_CANCEL;
-        notif.defaults |= Notification.DEFAULT_SOUND;
-        nm.notify(1, notif);
+        notice.flags |= Notification.FLAG_AUTO_CANCEL;
+        notice.defaults |= Notification.DEFAULT_SOUND;
+        nm.notify(1, notice);
     }
 }

@@ -5,19 +5,19 @@
         android:defaultValue="4"
         android:inputType="number"
         android:key="count"
-        android:summary="The amount sent packets"
-        android:title="Count packets"
+        android:summary="@string/summary_count_packets"
+        android:title="@string/title_count_packets"
         custom:max_seek="50" />
     <com.solodilov.evgen.pingservers.customPreference.CustomSeekBarPreference
         android:defaultValue="1"
         android:key="interval"
-        android:summary="The pause between packages in seconds"
-        android:title="Interval request"
+        android:summary="@string/summary_interval_request"
+        android:title="@string/title_interval_request"
         custom:max_seek="60" />
     <com.solodilov.evgen.pingservers.customPreference.CustomSeekBarPreference
         android:defaultValue="16"
         android:key="packetsize"
-        android:summary="Packet size in bytes to send"
-        android:title="Packet size"
+        android:summary="@string/summary_packet_size"
+        android:title="@string/title_packet_size"
         custom:max_seek="128" />
 </PreferenceScreen>
