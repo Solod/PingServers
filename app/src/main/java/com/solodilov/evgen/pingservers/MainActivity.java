@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -118,16 +117,12 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
                 if (myFragment != null) {
                     switch (status) {
                         case STATUS_NORM:
-                            myFragment.mPingLog.setTextColor(Color.BLACK);
-                            myFragment.mPingLog.setText(String.valueOf(myFragment.mPingLog.getText() + "\n").concat(s));
-                            break;
+                            myFragment.appendTextAndScroll(s);   break;
                         case STATUS_ALARM:
-                            myFragment.mPingLog.setTextColor(Color.RED);
-                            myFragment.mPingLog.setText(s);
+                            myFragment.appendTextAndScroll(s);
                             break;
                         case -1:
-                            myFragment.mPingLog.setTextColor(Color.YELLOW);
-                            myFragment.mPingLog.setText(getString(R.string.error));
+                            myFragment.appendTextAndScroll(getString(R.string.error));
                     }
                 }
             }

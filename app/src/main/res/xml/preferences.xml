@@ -15,7 +15,7 @@
         android:title="Interval request"
         custom:max_seek="60" />
     <com.solodilov.evgen.pingservers.customPreference.CustomSeekBarPreference
-        android:defaultValue="1"
+        android:defaultValue="16"
         android:key="packetsize"
         android:summary="Packet size in bytes to send"
         android:title="Packet size"

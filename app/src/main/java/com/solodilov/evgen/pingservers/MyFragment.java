@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import butterknife.BindView;
@@ -35,6 +37,8 @@ public class MyFragment extends Fragment {
     CheckBox mChBox;
     @BindView(R.id.btn_clean_text)
     ImageView mImageView;
+    @BindView(R.id.scroll)
+    ScrollView mScrollView;
 
     private OnStartMyService mOnStartMyService;
     private SharedPreferences mPreferences;
@@ -146,6 +150,25 @@ public class MyFragment extends Fragment {
             mImageView.setVisibility(View.VISIBLE);
         else
             mImageView.setVisibility(View.GONE);
+    }
+
+    public void appendTextAndScroll(String text) {
+        if (mPingLog != null) {
+            mPingLog.append(text + "\n");
+            final Layout layout = mPingLog.getLayout();
+            if (layout != null) {
+                int scrollDelta = layout.getLineBottom(mPingLog.getLineCount() - 1)
+                        - mPingLog.getScrollY() - mPingLog.getHeight();
+                if (scrollDelta > 0)
+                    mPingLog.scrollBy(0, scrollDelta);
+            }
+            mScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mScrollView.fullScroll(View.FOCUS_DOWN);
+                }
+            });
+        }
     }
 
 

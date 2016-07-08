@@ -40,7 +40,6 @@
         android:layout_alignRight="@id/et_enter_ip"
         android:clickable="true"
         android:padding="4dp"
-
         android:src="@android:drawable/ic_delete" />
 
     <CheckBox
@@ -64,6 +63,7 @@
         android:text="@string/start" />
 
     <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
@@ -75,6 +75,7 @@
         <TextView
             android:id="@+id/tv_ping_log"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:maxLines="100"/>
     </ScrollView>
 </RelativeLayout>

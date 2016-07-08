@@ -110,7 +110,6 @@ public class MyService extends Service {
                 String inputLine;
                 while (bufferedReader.ready() && (inputLine = bufferedReader.readLine()) != null) {
                     if (inputLine.length() > 0) {
-                        inputLine = inputLine.toLowerCase();
                         Log.d(LOG_, "ready! " + inputLine);
                         if (inputLine.contains("---") || inputLine.contains("ping")) {  // when we get to the last line of executed ping command
                             stringNameServer(inputLine);
