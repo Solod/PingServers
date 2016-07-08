@@ -1,34 +1,91 @@
 package com.solodilov.evgen.pingservers;
 
-import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MyFragment.OnStartMyService {
 
     public static final String STRING_COMMAND = "command string";
     public static final String SERVICE_MSG = "msg service";
+    public static final String STATUS_SERVICE = "status";
+    public final static int STATUS_NORM = 100;
+    private final static int STATUS_ALARM = 200;
     public static final String BROADCAST_ACTION = "com.solodilov.evgen.pingservers";
-    public static final String START_KEY = "start";
-    public static final String STOP_KEY = "stop";
+    private static final String SERVICE_ACTION = "com.solodilov.evgen.pingservers";
+    public static final int START_KEY = 1;
+    public static final int STOP_KEY = 2;
+    public static final String CHACKABLE_SERVICE = "check";
+    private static final int TASK_CODE = 1;
+    public static final String PENDING_INTENT = "pi";
 
-    BroadcastReceiver receiver;
+    private BroadcastReceiver receiver;
+    private AlarmManager mAlarmManager;
+    private Intent intentFromService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mAlarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.activity_container, MyFragment.newInstance())
                 .commit();
         setBroadcastReceiver();
+        initIntentBackground();
+    }
+
+    @Override
+    public void onStartService(String command, boolean taskServiceFragment) {
+        String mCommand = "/system/bin/ping -c 4 " + command;
+        intentFromService.putExtra(STRING_COMMAND, mCommand);
+
+        if (taskServiceFragment) {
+            PendingIntent pi = createPendingResult(TASK_CODE, new Intent(), 0);
+            intentFromService.putExtra(PENDING_INTENT, pi);
+            startService(intentFromService);
+        } else {
+            mAlarmManager.setRepeating(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + 3000,
+                    5000,
+                    backgroundPendingIntent());
+        }
+    }
+
+
+    @Override
+    public void onStopService() {
+        if (mAlarmManager != null) {
+            mAlarmManager.cancel(backgroundPendingIntent());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == STOP_KEY) {
+            getFragment().setTextButton("Start");
+        }
+        if (resultCode == START_KEY) {
+            getFragment().setTextButton("Stop");
+        }
+    }
+
+    private MyFragment getFragment() {
+        MyFragment myFragment = null;
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.activity_container);
+        if (fragment instanceof MyFragment)
+            myFragment = (MyFragment) fragment;
+        return myFragment;
     }
 
     private void setBroadcastReceiver() {
@@ -36,18 +93,21 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
             @Override
             public void onReceive(Context context, Intent intent) {
                 String s = intent.getStringExtra(SERVICE_MSG);
-                Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.activity_container);
-                if (fragment instanceof MyFragment) {
-                    MyFragment myFragment = (MyFragment) fragment;
-                    switch (s) {
-                        case START_KEY:
-                            myFragment.mBtn.setText("Stop");
+                int status = intent.getIntExtra(STATUS_SERVICE, -1);
+                MyFragment myFragment = getFragment();
+                if (myFragment != null) {
+                    switch (status) {
+                        case STATUS_NORM:
+                            myFragment.mPingLog.setTextColor(Color.BLACK);
+                            myFragment.mPingLog.setText(String.valueOf(myFragment.mPingLog.getText() + "\n").concat(s));
                             break;
-                        case STOP_KEY:
-                            myFragment.mBtn.setText("Start");
-                            break;
-                        default:
+                        case STATUS_ALARM:
+                            myFragment.mPingLog.setTextColor(Color.RED);
                             myFragment.mPingLog.setText(s);
+                            break;
+                        case -1:
+                            myFragment.mPingLog.setTextColor(Color.YELLOW);
+                            myFragment.mPingLog.setText(getString(R.string.error));
                     }
                 }
             }
@@ -58,33 +118,19 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(receiver);
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+        }
         super.onDestroy();
-
     }
 
-    @Override
-    public void onStartService(String command) {
-        String mCommand = "/system/bin/ping -i 10 "+command;
-        startService(new Intent(this, MyService.class).putExtra(STRING_COMMAND, mCommand));
-        }
-
-    @Override
-    public void onStopService() {
-        stopService(new Intent(this, MyService.class));
+    private void initIntentBackground() {
+        intentFromService = new Intent(this, MyService.class);
+        intentFromService.setAction(SERVICE_ACTION);
     }
 
-    @Override
-    public boolean onIsService() {
-        ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
-        List<ActivityManager.RunningServiceInfo> rs = am.getRunningServices(100);
-        for (int i = 0; i < rs.size(); i++) {
-            ActivityManager.RunningServiceInfo
-                    rsi = rs.get(i);
-            if (MyService.class.getName().equalsIgnoreCase(rsi.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
+    private PendingIntent backgroundPendingIntent() {
+        return PendingIntent.getService(this, 0, intentFromService, PendingIntent.FLAG_CANCEL_CURRENT);
     }
+
 }

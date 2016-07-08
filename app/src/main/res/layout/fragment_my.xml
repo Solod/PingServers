@@ -12,22 +12,35 @@
         android:id="@+id/tv_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:text="@string/label_status_service" />
 
     <TextView
         android:id="@+id/status_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@id/tv_label"
-        android:layout_alignEnd="@id/tv_label"/>
+        android:layout_alignEnd="@id/tv_label"
+        android:layout_alignRight="@id/tv_label" />
 
     <EditText
         android:id="@+id/et_enter_ip"
         android:layout_width="match_parent"
-      android:inputType="textUri"
         android:layout_height="wrap_content"
-        android:hint="Enter IP address from server "
-        android:layout_below="@id/tv_label" />
+        android:layout_below="@id/tv_label"
+        android:hint="@string/hint_address_from_server"
+        android:inputType="textUri" />
+
+    <CheckBox
+        android:id="@+id/chb_service"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/tv_label"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignRight="@id/tv_label"
+        android:text="@string/label_chb_ping"
+        tools:ignore="RelativeOverlap" />
 
 
     <Button
@@ -35,13 +48,21 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/et_enter_ip"
-        android:text="Start"
-        android:layout_centerInParent="true" />
-<TextView
-    android:id="@+id/tv_ping_log"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_below="@id/start_or_stop_service"
-    android:layout_alignParentEnd="true"
-    android:layout_alignParentRight="true" />
+        android:layout_centerInParent="true"
+        android:text="@string/start" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/start_or_stop_service"
+        android:background="@android:color/background_light">
+
+        <TextView
+            android:id="@+id/tv_ping_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
 </RelativeLayout>
