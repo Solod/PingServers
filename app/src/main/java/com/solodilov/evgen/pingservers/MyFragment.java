@@ -13,12 +13,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
+import butterknife.OnTextChanged;
 
 public class MyFragment extends Fragment {
     @BindView(R.id.et_enter_ip)
@@ -31,6 +33,8 @@ public class MyFragment extends Fragment {
     Button mBtn;
     @BindView(R.id.chb_service)
     CheckBox mChBox;
+    @BindView(R.id.btn_clean_text)
+    ImageView mImageView;
 
     private OnStartMyService mOnStartMyService;
     private SharedPreferences mPreferences;
@@ -129,8 +133,21 @@ public class MyFragment extends Fragment {
                 mChBox.setChecked(false);
             }
         }
-
     }
+
+    @OnClick(R.id.btn_clean_text)
+    void onClick() {
+        mEnterIP.setText("");
+    }
+
+    @OnTextChanged(R.id.et_enter_ip)
+    void textChanged(CharSequence text) {
+        if (mEnterIP.getText().toString().length() > 0)
+            mImageView.setVisibility(View.VISIBLE);
+        else
+            mImageView.setVisibility(View.GONE);
+    }
+
 
     interface OnStartMyService {
         void onStartService(String command, boolean taskServiceFragment);
