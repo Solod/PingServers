@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto">
+    <com.solodilov.evgen.pingservers.customPreference.CustomSeekBarPreference
+        android:defaultValue="4"
+        android:inputType="number"
+        android:key="count"
+        android:summary="The amount sent packets"
+        android:title="Count packets"
+        custom:max_seek="50" />
+    <com.solodilov.evgen.pingservers.customPreference.CustomSeekBarPreference
+        android:defaultValue="1"
+        android:key="interval"
+        android:summary="The pause between packages in seconds"
+        android:title="Interval request"
+        custom:max_seek="60" />
+    <com.solodilov.evgen.pingservers.customPreference.CustomSeekBarPreference
+        android:defaultValue="1"
+        android:key="packetsize"
+        android:summary="Packet size in bytes to send"
+        android:title="Packet size"
+        custom:max_seek="128" />
+</PreferenceScreen>
