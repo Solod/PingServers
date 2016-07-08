@@ -11,12 +11,15 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 
 public class MyService extends Service {
     final private String LOG_ = MyService.class.getCanonicalName();
-    private String mCommand;
+    private List<String> mCommand;
     private final Intent mIntentBR = new Intent(MainActivity.BROADCAST_ACTION);
     private NotificationManager nm;
+    private MyRun mMyRun;
 
     public MyService() {
     }
@@ -33,10 +36,11 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         PendingIntent pendingIntent = null;
         if (intent != null) {
-            mCommand = intent.getStringExtra(MainActivity.STRING_COMMAND);
+            mCommand = intent.getStringArrayListExtra(MainActivity.STRING_COMMAND);
+            Log.d(LOG_, Arrays.toString(mCommand                                                                                                                                                                                                                                                                                        .toArray()));
             pendingIntent = intent.getParcelableExtra(MainActivity.PENDING_INTENT);
         }
-        MyRun mMyRun = new MyRun(mCommand, pendingIntent);
+        mMyRun = new MyRun(mCommand, pendingIntent);
         mMyRun.start();
 
         return START_REDELIVER_INTENT;
@@ -49,19 +53,20 @@ public class MyService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d(LOG_, "Service destroy");
+        mMyRun.flag = false;
         stopSelf();
+        Log.d(LOG_, "Service destroy");
         super.onDestroy();
     }
 
     class MyRun extends Thread {
-        private final String command;
+        private List<String> mCommand;
         private java.lang.Process p;
         boolean flag = true;
-        private final PendingIntent pi;
+        private PendingIntent pi;
 
-        public MyRun(String command, PendingIntent pi) {
-            this.command = command;
+        public MyRun(List<String> command, PendingIntent pi) {
+            mCommand = command;
             this.pi = pi;
         }
 
@@ -76,7 +81,7 @@ public class MyService extends Service {
                         e.printStackTrace();
                     }
                 }
-                p = Runtime.getRuntime().exec(command);
+                p = new ProcessBuilder().command(mCommand).start();
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 BufferedReader bufferedReaderErr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
                 while (flag) {
@@ -87,6 +92,7 @@ public class MyService extends Service {
                 Log.v(LOG_, "getLatency: EXCEPTION");
                 e.printStackTrace();
             } finally {
+
                 p.destroy();
                 if (pi != null) {
                     try {
@@ -142,6 +148,7 @@ public class MyService extends Service {
                     if (inputLine.length() > 0) {
                         if (inputLine.contains("unknown")) {
                             Log.d(LOG_, "unknown!!!");
+                            activateAlarm();
                             flag = false;
                         }
                         // No ping server

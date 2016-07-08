@@ -1,16 +1,24 @@
+
 package com.solodilov.evgen.pingservers;
 
 import android.app.AlarmManager;
+import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.app.Fragment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MyFragment.OnStartMyService {
 
@@ -26,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
     public static final String CHACKABLE_SERVICE = "check";
     private static final int TASK_CODE = 1;
     public static final String PENDING_INTENT = "pi";
+    private static final String SYSTEM_BIN_PING = "/system/bin/ping";
+    private static final String LOG_ = MainActivity.class.getCanonicalName();
 
     private BroadcastReceiver receiver;
     private AlarmManager mAlarmManager;
@@ -36,17 +46,25 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAlarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.activity_container, MyFragment.newInstance())
+        getFragmentManager().beginTransaction()
+                .add(android.R.id.content, MyFragment.newInstance())
                 .commit();
         setBroadcastReceiver();
         initIntentBackground();
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+    }
+
+    @Override
     public void onStartService(String command, boolean taskServiceFragment) {
-        String mCommand = "/system/bin/ping -c 4 " + command;
-        intentFromService.putExtra(STRING_COMMAND, mCommand);
+
+        List<String> list = getAttributeCommandLine();
+        list.add(command.trim());
+        intentFromService.putStringArrayListExtra(STRING_COMMAND, (ArrayList<String>) list);
 
         if (taskServiceFragment) {
             PendingIntent pi = createPendingResult(TASK_CODE, new Intent(), 0);
@@ -67,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
         if (mAlarmManager != null) {
             mAlarmManager.cancel(backgroundPendingIntent());
         }
+        stopService(intentFromService);
+        //найти сервис и остановить
     }
 
     @Override
@@ -82,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
 
     private MyFragment getFragment() {
         MyFragment myFragment = null;
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.activity_container);
+        Fragment fragment = getFragmentManager().findFragmentById(android.R.id.content);
         if (fragment instanceof MyFragment)
             myFragment = (MyFragment) fragment;
         return myFragment;
@@ -124,6 +144,23 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
         super.onDestroy();
     }
 
+    private List<String> getAttributeCommandLine() {
+        List<String> list = new ArrayList<>();
+        list.add("ping");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int s;
+        if ((s = sharedPreferences.getInt(SettingsFragment.COUNT_PACKET, 0)) > 0) {
+            list.add("-c " + s);
+        }
+        if ((s = sharedPreferences.getInt(SettingsFragment.INTERVAL_REQUES, 0)) > 0) {
+            list.add("-i " + s);
+        }
+        if ((s = sharedPreferences.getInt(SettingsFragment.PACKET_SIZE, 0)) > 0) {
+            list.add("-s " + s);
+        }
+        return list;
+    }
+
     private void initIntentBackground() {
         intentFromService = new Intent(this, MyService.class);
         intentFromService.setAction(SERVICE_ACTION);
@@ -133,4 +170,25 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
         return PendingIntent.getService(this, 0, intentFromService, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.my_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            getFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, new SettingsFragment())
+                    .addToBackStack("")
+                    .commit();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }
