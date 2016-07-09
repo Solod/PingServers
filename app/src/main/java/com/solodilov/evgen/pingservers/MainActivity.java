@@ -43,9 +43,11 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAlarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        getFragmentManager().beginTransaction()
-                .add(android.R.id.content, MyFragment.newInstance())
-                .commit();
+        if (savedInstanceState == null) {
+            getFragmentManager().beginTransaction()
+                    .add(android.R.id.content, MyFragment.newInstance())
+                    .commit();
+        }
         setBroadcastReceiver();
         initIntentBackground();
     }
@@ -114,7 +116,8 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
                 if (myFragment != null) {
                     switch (status) {
                         case STATUS_NORM:
-                            myFragment.appendTextAndScroll(s);   break;
+                            myFragment.appendTextAndScroll(s);
+                            break;
                         case STATUS_ALARM:
                             myFragment.appendTextAndScroll(s);
                             break;
@@ -171,11 +174,9 @@ public class MainActivity extends AppCompatActivity implements MyFragment.OnStar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             getFragmentManager().beginTransaction()
-                    .replace(android.R.id.content, new SettingsFragment())
+                    .add(android.R.id.content, new SettingsFragment())
                     .addToBackStack("")
                     .commit();
             return true;

@@ -25,10 +25,9 @@ import butterknife.OnClick;
 import butterknife.OnTextChanged;
 
 public class MyFragment extends Fragment {
+    private static final String STATE_LOG = "log";
     @BindView(R.id.et_enter_ip)
     EditText mEnterIP;
-    @BindView(R.id.status_service)
-    TextView mStatusServer;
     @BindView(R.id.tv_ping_log)
     TextView mPingLog;
     @BindView(R.id.start_or_stop_service)
@@ -69,6 +68,7 @@ public class MyFragment extends Fragment {
                 .getString(MainActivity.CHACKABLE_SERVICE, "");
         mEnterIP.setText(ip);
         mChBox.setChecked(!ip.equals(""));
+
     }
 
     @Override
@@ -77,6 +77,14 @@ public class MyFragment extends Fragment {
         mOnStartMyService.onStopService();
         if (mChBox.isChecked()) {
             mOnStartMyService.onStartService(mEnterIP.getText().toString(), true);
+        }
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            appendTextAndScroll(savedInstanceState.getString(STATE_LOG,""));
         }
     }
 
