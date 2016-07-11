@@ -74,9 +74,11 @@ public class MyFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        mOnStartMyService.onStopService();
-        if (mChBox.isChecked()) {
-            mOnStartMyService.onStartService(mEnterIP.getText().toString(), true);
+        if (mOnStartMyService != null) {
+            mOnStartMyService.onStopService();
+            if (mChBox.isChecked()) {
+                mOnStartMyService.onStartService(mEnterIP.getText().toString(), true);
+            }
         }
     }
 
@@ -84,7 +86,7 @@ public class MyFragment extends Fragment {
     public void onViewStateRestored(Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-            appendTextAndScroll(savedInstanceState.getString(STATE_LOG,""));
+            appendTextAndScroll(savedInstanceState.getString(STATE_LOG, ""));
         }
     }
 
@@ -97,7 +99,9 @@ public class MyFragment extends Fragment {
                 editor.putString(MainActivity.CHACKABLE_SERVICE, strIp);
                 editor.apply();
             }
-            mOnStartMyService.onStartService(strIp, false);
+            if (mOnStartMyService != null) {
+                mOnStartMyService.onStartService(strIp, false);
+            }
         }
         super.onStop();
     }
