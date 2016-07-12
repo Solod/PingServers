@@ -1,0 +1,16 @@
+<resources>
+    <string name="text_button_stop">Стоп</string>
+    <string name="text_button_start">Старт</string>
+    <string name="error">Ошибка</string>
+    <string name="label_status_service">Статус сервиса:</string>
+    <string name="label_chb_ping">Пинговать в сервисе</string>
+    <string name="action_settings">Настройки</string>
+    <string name="error_text_empty_string">Введите ip-адрес или dns сервера</string>
+    <string name="title_count_packets">Количество пакетов</string>
+    <string name="summary_count_packets">Количество пакетов которые необходимо отправлять</string>
+    <string name="title_interval_request">Интервал запросов</string>
+    <string name="summary_interval_request">Какая необходима пауза между пакетами</string>
+    <string name="title_packet_size">Розмер пакетов</string>
+    <string name="summary_packet_size">Розмер пакетов в байтах для отправки</string>
+    <string name="hint_address_from_server">Введите адрес сайта</string>
+</resources>

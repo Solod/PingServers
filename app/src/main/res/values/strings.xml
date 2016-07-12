@@ -2,7 +2,7 @@
     <string name="text_button_stop">Stop</string>
     <string name="text_button_start">Start</string>
     <string name="error">ERROR</string>
-    <string name="app_name">Ping Servers</string>
+    <string name="app_name" translatable="false">Ping Servers</string>
     <string name="label_status_service">Status Service:</string>
     <string name="label_chb_ping">Ping as a service</string>
     <string name="action_settings">Setting</string>
@@ -14,5 +14,7 @@
     <string name="title_packet_size">Packet size</string>
     <string name="summary_packet_size">Packet size in bytes to send</string>
     <string name="hint_address_from_server">Enter the server address</string>
+    <string name="reg_exp_ip" translatable="false">\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b</string>
+    <string name="reg_exp_dns" translatable="false">^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$</string>
 
 </resources>

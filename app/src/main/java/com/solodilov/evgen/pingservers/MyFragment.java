@@ -1,15 +1,14 @@
 package com.solodilov.evgen.pingservers;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Layout;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +75,7 @@ public class MyFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(MyFragment.class.getCanonicalName(), mOnStartMyService == null ? "null" : mOnStartMyService.toString());
         if (mOnStartMyService != null) {
             mOnStartMyService.onStopService();
             if (mChBox.isChecked()) {
@@ -126,13 +126,9 @@ public class MyFragment extends Fragment {
         String textButton = String.valueOf(button.getText());
         switch (textButton) {
             case "Start":
-                String adress = String.valueOf(mEnterIP.getText());
-                if (validIp(adress)) {
-                    mOnStartMyService.onStartService(adress, true);
-                    setTextButton(getString(R.string.text_button_stop));
-                } else {
-                    NotifUserNotValid();
-                }
+                String address = String.valueOf(mEnterIP.getText());
+                mOnStartMyService.onStartService(address, true);
+                setTextButton(getString(R.string.text_button_stop));
                 break;
             case "Stop":
                 mOnStartMyService.onStopService();
@@ -142,35 +138,12 @@ public class MyFragment extends Fragment {
         }
     }
 
-    private void NotifUserNotValid() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Важное сообщение!")
-                .setMessage("Покормите кота!")
-                .setCancelable(false)
-                .setNegativeButton("ОК, иду на кухню",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
 
     @OnClick(R.id.btn_clean_text)
     void onClick() {
         mEnterIP.setText("");
     }
 
-    private boolean validIp(String adress) {
-        adress.trim();
-        String regExpDNS = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$\n";
-        String regExpIP = "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b";
-        if(adress.matches(regExpIP)||adress.matches(regExpDNS)){
-            return true;
-        }
-        return false;
-    }
 
     void setTextButton(String text) {
         mBtn.setText(text);
@@ -191,9 +164,14 @@ public class MyFragment extends Fragment {
 
     @OnTextChanged(R.id.et_enter_ip)
     void textChanged() {
-        if (mEnterIP.getText().toString().length() > 0) {
+        String address = mEnterIP.getText().toString().trim();
+        if (address.length() > 0) {
             mImageView.setVisibility(View.VISIBLE);
-            mBtn.setEnabled(true);
+            if (validIp(address)) {
+                mBtn.setEnabled(true);
+            } else {
+                mBtn.setEnabled(false);
+            }
         } else {
             mImageView.setVisibility(View.GONE);
             mBtn.setEnabled(false);
@@ -219,6 +197,9 @@ public class MyFragment extends Fragment {
         }
     }
 
+    private boolean validIp(String address) {
+        return address.matches(getString(R.string.reg_exp_ip)) || address.matches(getString(R.string.reg_exp_dns));
+    }
 
     interface OnStartMyService {
         void onStartService(String command, boolean taskServiceFragment);
