@@ -1,7 +1,9 @@
 package com.solodilov.evgen.pingservers;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
@@ -121,11 +123,16 @@ public class MyFragment extends Fragment {
     @OnClick(R.id.start_or_stop_service)
     void onClick(View v) {
         Button button = (Button) v;
-        String textButton = (String) button.getText();
+        String textButton = String.valueOf(button.getText());
         switch (textButton) {
             case "Start":
-                mOnStartMyService.onStartService(String.valueOf(mEnterIP.getText()), true);
-                setTextButton(getString(R.string.text_button_stop));
+                String adress = String.valueOf(mEnterIP.getText());
+                if (validIp(adress)) {
+                    mOnStartMyService.onStartService(adress, true);
+                    setTextButton(getString(R.string.text_button_stop));
+                } else {
+                    NotifUserNotValid();
+                }
                 break;
             case "Stop":
                 mOnStartMyService.onStopService();
@@ -133,6 +140,36 @@ public class MyFragment extends Fragment {
                 break;
             default:
         }
+    }
+
+    private void NotifUserNotValid() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Важное сообщение!")
+                .setMessage("Покормите кота!")
+                .setCancelable(false)
+                .setNegativeButton("ОК, иду на кухню",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    @OnClick(R.id.btn_clean_text)
+    void onClick() {
+        mEnterIP.setText("");
+    }
+
+    private boolean validIp(String adress) {
+        adress.trim();
+        String regExpDNS = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$\n";
+        String regExpIP = "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b";
+        if(adress.matches(regExpIP)||adress.matches(regExpDNS)){
+            return true;
+        }
+        return false;
     }
 
     void setTextButton(String text) {
@@ -151,17 +188,16 @@ public class MyFragment extends Fragment {
         }
     }
 
-    @OnClick(R.id.btn_clean_text)
-    void onClick() {
-        mEnterIP.setText("");
-    }
 
     @OnTextChanged(R.id.et_enter_ip)
-    void textChanged(CharSequence text) {
-        if (mEnterIP.getText().toString().length() > 0)
+    void textChanged() {
+        if (mEnterIP.getText().toString().length() > 0) {
             mImageView.setVisibility(View.VISIBLE);
-        else
+            mBtn.setEnabled(true);
+        } else {
             mImageView.setVisibility(View.GONE);
+            mBtn.setEnabled(false);
+        }
     }
 
     public void appendTextAndScroll(String text) {
