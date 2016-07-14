@@ -124,17 +124,13 @@ public class MyFragment extends Fragment {
     void onClick(View v) {
         Button button = (Button) v;
         String textButton = String.valueOf(button.getText());
-        switch (textButton) {
-            case "Start":
-                String address = String.valueOf(mEnterIP.getText());
-                mOnStartMyService.onStartService(address, true);
-                setTextButton(getString(R.string.text_button_stop));
-                break;
-            case "Stop":
-                mOnStartMyService.onStopService();
-                setTextButton(getString(R.string.text_button_start));
-                break;
-            default:
+        if (textButton.equals(getString(R.string.text_button_start))) {
+            String address = String.valueOf(mEnterIP.getText());
+            mOnStartMyService.onStartService(address, true);
+            setTextButton(getString(R.string.text_button_stop));
+        } else if (textButton.equals(getString(R.string.text_button_stop))) {
+            mOnStartMyService.onStopService();
+            setTextButton(getString(R.string.text_button_start));
         }
     }
 

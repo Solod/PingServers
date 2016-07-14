@@ -6,6 +6,7 @@ Application to test ping servers.
 - BroadcastReceiver, Notification, 
 - Service, AlarmManager, PendingIntent, 
 - Preference and CustomPreference.
+- ButterKnife
 
 License
 ----
